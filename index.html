@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>樂齡肩髖關節復健訓練應用</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+.screen { display: none; }
+.screen.active { display: block; }
+.header { text-align: center; margin-bottom: 3rem; }
+.header h1 { font-size: 32px; font-weight: 700; color: #2c3e50; margin-bottom: 0.5rem; }
+.header p { font-size: 16px; color: #7f8c8d; }
+.card { 
+  background: white; 
+  border-radius: 16px; 
+  padding: 1.5rem; 
+  margin-bottom: 1.5rem; 
+  box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+  transition: all 0.3s;
+}
+.card:hover { box-shadow: 0 8px 16px rgba(0,0,0,0.12); }
+.progress-bar { 
+  width: 100%; 
+  height: 10px; 
+  background: #ecf0f1; 
+  border-radius: 5px; 
+  overflow: hidden; 
+  margin: 1rem 0; 
+}
+.progress-fill { 
+  height: 100%; 
+  background: linear-gradient(90deg, #3498db, #2ecc71); 
+  border-radius: 5px; 
+  transition: width 0.5s; 
+}
+.category-card { 
+  cursor: pointer; 
+  transition: all 0.3s; 
+  border-left: 5px solid;
+}
+.category-card:hover { transform: translateY(-4px); }
+.category-card.blue { border-left-color: #3498db; }
+.category-card.green { border-left-color: #2ecc71; }
+.badge { 
+  display: inline-block; 
+  padding: 6px 14px; 
+  border-radius: 20px; 
+  font-size: 13px; 
+  font-weight: 600; 
+}
+.badge-green { background: #d5f4e6; color: #27ae60; }
+.badge-blue { background: #d6eaf8; color: #2980b9; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.text-sm { font-size: 14px; }
+.text-lg { font-size: 20px; }
+.text-xl { font-size: 24px; }
+.font-medium { font-weight: 600; }
+.text-secondary { color: #7f8c8d; }
+button { 
+  background: #ecf0f1; 
+  border: none; 
+  border-radius: 10px; 
+  padding: 0.875rem 1.5rem; 
+  font-size: 15px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  transition: all 0.2s; 
+  font-family: inherit;
+}
+button:hover { background: #bdc3c7; transform: scale(1.02); }
+button:active { transform: scale(0.98); }
+button.primary { background: #3498db; color: white; }
+button.primary:hover { background: #2980b9; }
+button.secondary { background: #2ecc71; color: white; }
+button.secondary:hover { background: #27ae60; }
+button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.icon-btn { padding: 0.75rem; min-width: auto; font-size: 20px; }
+.video-container { 
+  position: relative; 
+  padding-bottom: 56.25%; 
+  height: 0; 
+  overflow: hidden; 
+  border-radius: 12px; 
+  background: #000; 
+  margin-bottom: 1.5rem; 
+}
+.video-container iframe { 
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  border: 0; 
+}
+.instruction-list { list-style: none; }
+.instruction-item { 
+  display: flex; 
+  align-items: start; 
+  gap: 1rem; 
+  margin-bottom: 1rem; 
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+.instruction-number { 
+  background: #3498db; 
+  color: white; 
+  font-size: 12px; 
+  font-weight: 700; 
+  padding: 6px 10px; 
+  border-radius: 50%; 
+  flex-shrink: 0; 
+  min-width: 32px;
+  text-align: center;
+}
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.stat-card { 
+  background: #f8f9fa; 
+  border-radius: 12px; 
+  padding: 1.5rem; 
+  text-align: center; 
+}
+.stat-value { font-size: 36px; font-weight: 700; }
+.stat-label { font-size: 12px; color: #7f8c8d; margin-top: 0.5rem; text-transform: uppercase; }
+.alert { 
+  border-radius: 12px; 
+  padding: 1.25rem; 
+  display: flex; 
+  gap: 1rem; 
+  font-size: 14px; 
+  line-height: 1.6; 
+}
+.alert-warning { background: #fff3cd; border-left: 4px solid #ffc107; }
+.alert-danger { background: #f8d7da; border-left: 4px solid #dc3545; }
+.alert-success { background: #d4edda; border-left: 4px solid #28a745; }
+.rest-timer { 
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7); 
+  border-radius: 12px; 
+  padding: 2rem; 
+  text-align: center; 
+}
+.rest-timer-value { font-size: 48px; font-weight: 700; color: #e67e22; margin: 1rem 0; }
+.two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+@media (max-width: 768px) { 
+  .two-column { grid-template-columns: 1fr; }
+  .container { padding: 1rem; }
+  .header h1 { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="homeScreen" class="screen active">
+    <div class="header">
+      <h1>🏃‍♂️ 樂齡復健助手</h1>
+      <p>專業肩髖關節復健訓練計畫</p>
+    </div>
+    
+    <div class="card">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span style="font-size: 24px;">🏆</span>
+          <span class="font-medium text-lg">訓練進度</span>
+        </div>
+        <span class="text-xl font-medium" style="color: #3498db;">5/12</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 42%;"></div>
+      </div>
+      <p class="text-sm text-secondary">本週已完成 5 次訓練，繼續加油！</p>
+    </div>
+    
+    <div class="card category-card blue" onclick="showCategory('shoulder')">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-lg font-medium mb-2">肩關節復健</h3>
+          <p class="text-sm text-secondary mb-2">改善肩關節活動度與肌力</p>
+          <div style="font-size: 14px; color: #3498db; margin-top: 0.5rem;">
+            📊 3 個運動 · 🎬 含示範影片
+          </div>
+        </div>
+        <div style="font-size: 48px;">🤸‍♂️</div>
+      </div>
+    </div>
+    
+    <div class="card category-card green" onclick="showCategory('hip')">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-lg font-medium mb-2">髖關節復健</h3>
+          <p class="text-sm text-secondary mb-2">增強髖關節穩定性與肌力</p>
+          <div style="font-size: 14px; color: #2ecc71; margin-top: 0.5rem;">
+            📊 3 個運動 · 🎬 含示範影片
+          </div>
+        </div>
+        <div style="font-size: 48px;">🦵</div>
+      </div>
+    </div>
+    
+    <div class="alert alert-warning">
+      <span style="font-size: 24px;">⚠️</span>
+      <div>
+        <div class="font-medium mb-2" style="font-size: 16px;">安全提醒</div>
+        <div>請在開始運動前諮詢醫療專業人員。如感到疼痛或不適，請立即停止運動。</div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="categoryScreen" class="screen"></div>
+  <div id="exerciseScreen" class="screen"></div>
+  <div id="completeScreen" class="screen"></div>
+</div>
+
+<script>
+const exercises = {
+  shoulder: [
+    { 
+      id: 's1', 
+      name: '肩關節前彎運動', 
+      description: '坐姿或站立，緩慢將手臂向前舉起', 
+      sets: 3, 
+      reps: 10, 
+      restTime: 30, 
+      videoUrl: 'https://www.youtube.com/embed/fSD3p0eJ91A',
+      instructions: [
+        '保持背部挺直，雙腳平放地面',
+        '緩慢將雙臂向前平舉至肩膀高度',
+        '維持2-3秒後緩慢放下',
+        '感到疼痛時立即停止'
+      ], 
+      difficulty: '初級', 
+      benefits: '改善肩關節前彎活動度，增強前三角肌' 
+    },
+    { 
+      id: 's2', 
+      name: '肩胛骨收縮運動', 
+      description: '坐姿將肩胛骨向後夾緊', 
+      sets: 3, 
+      reps: 12, 
+      restTime: 30, 
+      videoUrl: 'https://www.youtube.com/embed/L7vJPzW-SPs',
+      instructions: [
+        '坐直，雙手放在大腿上',
+        '將肩胛骨向後夾緊',
+        '維持5秒後放鬆',
+        '避免聳肩動作'
+      ], 
+      difficulty: '初級', 
+      benefits: '改善上背部肌力，預防駝背' 
+    },
+    { 
+      id: 's3', 
+      name: '肩關節外旋運動', 
+      description: '使用彈力帶進行肩關節外旋', 
+      sets: 2, 
+      reps: 15, 
+      restTime: 45, 
+      videoUrl: 'https://www.youtube.com/embed/rPtSCFB-vVQ',
+      instructions: [
+        '手肘彎曲90度貼近身體',
+        '使用彈力帶或毛巾輔助',
+        '緩慢向外旋轉前臂',
+        '控制回程動作'
+      ], 
+      difficulty: '中級', 
+      benefits: '增強肩關節穩定性，改善外旋活動度' 
+    }
+  ],
+  hip: [
+    { 
+      id: 'h1', 
+      name: '髖關節屈曲運動', 
+      description: '坐姿或躺臥抬膝運動', 
+      sets: 3, 
+      reps: 10, 
+      restTime: 30, 
+      videoUrl: 'https://www.youtube.com/embed/oyZWACoNPXs',
+      instructions: [
+        '坐在椅子邊緣或躺在床上',
+        '緩慢將一側膝蓋抬向胸部',
+        '維持2-3秒後緩慢放下',
+        '兩側交替進行'
+      ], 
+      difficulty: '初級', 
+      benefits: '改善髖關節屈曲活動度，增強髂腰肌' 
+    },
+    { 
+      id: 'h2', 
+      name: '髖關節外展運動', 
+      description: '側躺或站立側抬腿運動', 
+      sets: 3, 
+      reps: 12, 
+      restTime: 30, 
+      videoUrl: 'https://www.youtube.com/embed/1I2un2TAcv4',
+      instructions: [
+        '側躺或扶椅背站立',
+        '緩慢將腿向側面抬起',
+        '維持2秒後緩慢放下',
+        '保持骨盆穩定'
+      ], 
+      difficulty: '初級', 
+      benefits: '增強臀中肌，改善步態穩定性' 
+    },
+    { 
+      id: 'h3', 
+      name: '臀橋運動', 
+      description: '躺臥抬臀強化臀部肌群', 
+      sets: 3, 
+      reps: 8, 
+      restTime: 45, 
+      videoUrl: 'https://www.youtube.com/embed/wPM8icPu6H8',
+      instructions: [
+        '仰躺，膝蓋彎曲腳掌著地',
+        '緩慢抬起臀部形成橋型',
+        '維持3-5秒後緩慢放下',
+        '感受臀部肌肉收縮'
+      ], 
+      difficulty: '中級', 
+      benefits: '強化臀大肌和核心肌群' 
+    }
+  ]
+};
+
+let currentCategory = '';
+let currentExercise = null;
+let currentSet = 1;
+let currentRep = 0;
+let restTime = 0;
+let restInterval = null;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showCategory(cat) {
+  currentCategory = cat;
+  const list = exercises[cat];
+  const title = cat === 'shoulder' ? '肩關節復健' : '髖關節復健';
+  
+  document.getElementById('categoryScreen').innerHTML = `
+    <div class="flex items-center mb-6" style="gap: 1rem;">
+      <button class="icon-btn" onclick="showScreen('homeScreen')">🏠</button>
+      <h2 class="text-xl font-medium">${title}</h2>
+    </div>
+    ${list.map(ex => `
+      <div class="card">
+        <div class="flex justify-between items-start mb-3">
+          <h3 class="font-medium text-lg">${ex.name}</h3>
+          <span class="badge ${ex.difficulty === '初級' ? 'badge-green' : 'badge-blue'}">${ex.difficulty}</span>
+        </div>
+        <p class="text-sm text-secondary mb-3">${ex.description}</p>
+        <div class="flex text-sm text-secondary mb-3" style="gap: 1.5rem;">
+          <span>📋 ${ex.sets} 組</span>
+          <span>🔢 ${ex.reps} 次</span>
+          <span>⏱️ 休息 ${ex.restTime}秒</span>
+        </div>
+        <div class="mb-4">
+          <p class="text-sm font-medium mb-2">🎯 功效：</p>
+          <p class="text-sm text-secondary">${ex.benefits}</p>
+        </div>
+        <button class="primary" style="width: 100%; font-size: 16px;" onclick="startExercise('${ex.id}')">
+          ▶️ 開始訓練
+        </button>
+      </div>
+    `).join('')}
+  `;
+  showScreen('categoryScreen');
+}
+
+function startExercise(id) {
+  currentExercise = [...exercises.shoulder, ...exercises.hip].find(e => e.id === id);
+  currentSet = 1;
+  currentRep = 0;
+  restTime = 0;
+  updateExerciseScreen();
+  showScreen('exerciseScreen');
+}
+
+function updateExerciseScreen() {
+  const ex = currentExercise;
+  const isComplete = currentRep === ex.reps && currentSet === ex.sets;
+  
+  document.getElementById('exerciseScreen').innerHTML = `
+    <div class="flex items-center justify-between mb-6">
+      <button class="icon-btn" onclick="showCategory('${currentCategory}')">🏠</button>
+      <h2 class="font-medium text-xl" style="flex: 1; text-align: center;">${ex.name}</h2>
+      <div style="width: 48px;"></div>
+    </div>
+    
+    <div class="two-column">
+      <div>
+        <div class="card mb-4">
+          <h3 class="font-medium mb-3 text-lg" style="color: #9b59b6;">📹 示範影片</h3>
+          
+          <div class="video-container">
+            <iframe
+              src="${ex.videoUrl}?playsinline=1"
+              title="${ex.name} 示範影片"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h3 class="font-medium mb-4 text-lg">📝 動作要領</h3>
+          <ul class="instruction-list">
+            ${ex.instructions.map((inst, i) => `
+              <li class="instruction-item">
+                <span class="instruction-number">${i + 1}</span>
+                <span class="text-sm">${inst}</span>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      </div>
+      
+      <div>
+        <div class="card">
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="font-size: 36px; font-weight: 700; color: #3498db; margin-bottom: 0.5rem;">
+              第 ${currentSet} 組 / 第 ${currentRep} 次
+            </div>
+            <div class="text-sm text-secondary">目標: ${ex.sets} 組 × ${ex.reps} 次</div>
+          </div>
+          
+          ${restTime > 0 ? `
+            <div class="rest-timer mb-4">
+              <div style="font-size: 20px;">⏱️</div>
+              <div class="rest-timer-value">${restTime}</div>
+              <div class="text-sm" style="color: #e67e22; font-weight: 600;">秒休息時間</div>
+            </div>
+          ` : ''}
+          
+          <div class="flex" style="justify-content: center; gap: 1rem; margin-bottom: 1.5rem;">
+            <button class="${restTime > 0 ? '' : 'secondary'}" style="flex: 1; font-size: 16px;" ${restTime > 0 ? 'disabled' : ''} onclick="nextRep()">
+              ${isComplete ? '✅ 完成訓練' : '➡️ 下一次'}
+            </button>
+            <button class="icon-btn" onclick="resetExercise()" style="font-size: 20px;">🔄</button>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h3 class="font-medium mb-4 text-lg">📊 訓練參數</h3>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-value" style="color: #3498db;">${ex.sets}</div>
+              <div class="stat-label">組數</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color: #2ecc71;">${ex.reps}</div>
+              <div class="stat-label">次數</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color: #e67e22;">${ex.restTime}</div>
+              <div class="stat-label">休息(秒)</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="alert alert-danger">
+          <span style="font-size: 24px;">⚠️</span>
+          <div>
+            <span class="font-medium">注意：</span>
+            如感到疼痛或不適請立即停止運動，必要時諮詢醫療專業人員。
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function nextRep() {
+  if (restInterval) clearInterval(restInterval);
+  
+  if (currentRep < currentExercise.reps) {
+    currentRep++;
+    updateExerciseScreen();
+  } else if (currentSet < currentExercise.sets) {
+    currentSet++;
+    currentRep = 0;
+    restTime = currentExercise.restTime;
+    updateExerciseScreen();
+    
+    restInterval = setInterval(() => {
+      restTime--;
+      if (restTime <= 0) clearInterval(restInterval);
+      updateExerciseScreen();
+    }, 1000);
+  } else {
+    showComplete();
+  }
+}
+
+function resetExercise() {
+  if (restInterval) clearInterval(restInterval);
+  currentSet = 1;
+  currentRep = 0;
+  restTime = 0;
+  updateExerciseScreen();
+}
+
+function showComplete() {
+  const ex = currentExercise;
+  document.getElementById('completeScreen').innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 70vh;">
+      <div class="card" style="max-width: 500px; text-align: center;">
+        <div style="font-size: 72px; margin-bottom: 1.5rem;">🎉</div>
+        <h2 class="text-xl font-medium mb-3" style="font-size: 28px;">運動完成！</h2>
+        <p class="text-secondary mb-6" style="font-size: 16px;">恭喜您完成了 ${ex.name} 的訓練</p>
+        
+        <div class="alert alert-success mb-6">
+          <span style="font-size: 28px;">🏆</span>
+          <div style="text-align: left;">
+            <div class="font-medium mb-2" style="font-size: 16px;">訓練成果</div>
+            <div>完成 ${ex.sets} 組 × ${ex.reps} 次訓練</div>
+          </div>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <button class="primary" style="font-size: 16px;" onclick="showCategory('${currentCategory}')">
+            ➡️ 繼續其他運動
+          </button>
+          <button style="font-size: 16px;" onclick="showScreen('homeScreen')">
+            🏠 回到主頁
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  showScreen('completeScreen');
+}
+</script>
+</body>
+</html>
